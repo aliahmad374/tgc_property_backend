@@ -101,7 +101,11 @@ def top_property_by_ares(request, *args, **kwargs):
     try:
         # Assuming your model name is Property and the field name is area_id
         query_result = Properties.objects.values('area_id').annotate(repetitions=Count('area_id')).order_by('-repetitions')[:16]
-        return Response({'property_info': [ {'area_id':v['area_id']} for v in query_result]},status=status.HTTP_200_OK)
+        # Extract area_id values from the result
+        top_area_ids = [area['area_id'] for area in query_result]        
+        top_properties = Area.objects.filter(area_id__in=top_area_ids).values('area_id', 'neighbour')
+
+        return Response({'property_info': top_properties},status=status.HTTP_200_OK)
     except Exception as E:
         print(E)
-        return Response({'error':'error'},status=status.HTTP_400_BAD_REQUEST)         
+        return Response({'error':'error'},status=status.HTTP_400_BAD_REQUEST)
