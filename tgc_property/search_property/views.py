@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.db.models import F
 from django.db.models import FloatField, F, Value
 from django.db.models.functions import Cast
-
+from django.db.models import Count
 @api_view(['GET'])
 def search_by_area(request, *args, **kwargs):
     try:
@@ -63,7 +63,7 @@ def top_properties_by_margin(request, *args, **kwargs):
     try:
         property_instance = Properties.objects.annotate(numeric_margin=Cast('margin', FloatField())).order_by('-numeric_margin')[:20]
         if property_instance:
-            serialized_data = list(property_instance.values('id', 'price','bedrooms','living_area','location','image_urls')) if property_instance else []
+            serialized_data = list(property_instance.values('id','title', 'price','bedrooms','living_area','location','image_urls')) if property_instance else []
             return Response({'property_info': serialized_data},status=status.HTTP_200_OK)
 
         else:
@@ -94,3 +94,14 @@ def search_property_by_id(request, *args, **kwargs):
 
     except:
         return Response({'error':'error'},status=status.HTTP_400_BAD_REQUEST)    
+    
+
+@api_view(['GET'])
+def top_property_by_ares(request, *args, **kwargs):
+    try:
+        # Assuming your model name is Property and the field name is area_id
+        query_result = Properties.objects.values('area_id').annotate(repetitions=Count('area_id')).order_by('-repetitions')[:16]
+        return Response({'property_info': [ {'area_id':v['area_id']} for v in query_result]},status=status.HTTP_200_OK)
+    except Exception as E:
+        print(E)
+        return Response({'error':'error'},status=status.HTTP_400_BAD_REQUEST)         
