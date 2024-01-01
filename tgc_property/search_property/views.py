@@ -10,6 +10,8 @@ from django.db.models import F
 from django.db.models import FloatField, F, Value
 from django.db.models.functions import Cast
 from django.db.models import Count
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 @api_view(['GET'])
 def search_by_area(request, *args, **kwargs):
     try:
@@ -42,11 +44,21 @@ def search_property_by_area(request, *args, **kwargs):
 
             # Perform a case-insensitive search for property name in the database
             property_instance = Properties.objects.filter(area_id=area_id).order_by(-F('margin'))
-            if property_instance:
+            paginator = Paginator(property_instance, 10)  # Number of items per page
+            page = request.GET.get('page')
+            try:
+                properties = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                properties = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range, deliver last page of results.
+                properties = paginator.page(paginator.num_pages)
+
+            if properties:
+                serialized_data = PropertiesSerializer(properties, many=True).data
                 # Serialize the property instance to retrieve its ID
-                # serializer = PropertiesSerializer(property_instance,many=True)
-                serialized_data = list(property_instance.values('id','title' ,'price','bedrooms','living_area','location','image_urls')) if property_instance else []
-                return Response({'property_info': serialized_data},status=status.HTTP_200_OK)
+                return Response({'property_info': serialized_data,'total_count':len(property_instance)},status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'Property not found'},status=status.HTTP_200_OK)
         else:
