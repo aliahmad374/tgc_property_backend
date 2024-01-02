@@ -40,10 +40,25 @@ def search_by_area(request, *args, **kwargs):
 def search_property_by_area(request, *args, **kwargs):
     try:
         area_id = request.GET.get('area_id')
+        bedrooms = request.GET.get('beds')
+        min_price = request.GET.get('min_price')
+        max_price = request.GET.get('max_price')
+        min_area = request.GET.get('min_area')
+        max_area = request.GET.get('max_area')
+        
         if area_id!=None:
+            filters = {'area_id':area_id}
+            if bedrooms!=None:
+                filters['bedrooms']=bedrooms
+            if min_price!=None and max_price!=None:
+                filters['price__gte'] = min_price
+                filters['price__lte'] = max_price
+            if min_area!=None and max_area!=None:
+                filters['living_area__gte'] = min_area
+                filters['living_area__lte'] = max_area
 
             # Perform a case-insensitive search for property name in the database
-            property_instance = Properties.objects.filter(area_id=area_id).order_by(-F('margin'))
+            property_instance = Properties.objects.filter(**filters).order_by(-F('margin'))
             paginator = Paginator(property_instance, 10)  # Number of items per page
             page = request.GET.get('page')
             try:
@@ -66,7 +81,8 @@ def search_property_by_area(request, *args, **kwargs):
 
 
 
-    except:
+    except Exception as E:
+        print(E)
         return Response({'error':'error'},status=status.HTTP_400_BAD_REQUEST)
     
 
