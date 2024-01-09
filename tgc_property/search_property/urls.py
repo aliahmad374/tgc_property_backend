@@ -9,7 +9,5 @@ urlpatterns = [
     path('property_id/', views.search_property_by_id,name='search_property_by_id'),
     path('topareaproperty/', views.top_property_by_ares,name='topareaproperty'),
     # search by Location
-    path('search/location/', views.search_by_location,name='search_by_location'),
-    path('property/location/', views.search_property_by_location,name='search_property_by_location'),
     path('toplocationproperty/', views.top_property_by_location,name='top_property_by_location'),
 ]
