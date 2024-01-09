@@ -7,10 +7,20 @@ class Area(models.Model):
         managed = False
         db_table = 'area'
 
+class location(models.Model):
+    location_id = models.AutoField(primary_key=True)
+    location_name = models.TextField()
+    class Meta:
+        managed = False
+        db_table = 'location'        
+
 class Properties(models.Model):
     area = models.ForeignKey(Area, on_delete=models.CASCADE)
+    location = models.ForeignKey(location, on_delete=models.CASCADE)
+    property_detail = models.TextField()
+    characteristics = models.TextField()
     title = models.TextField()
-    location = models.TextField()
+    location_property = models.TextField()
     neighbours = models.TextField()
     image_urls = models.TextField()
     living_space = models.TextField()
@@ -45,3 +55,5 @@ class Properties(models.Model):
     class Meta:
         managed = False
         db_table = 'properties'
+
+
