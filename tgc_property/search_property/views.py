@@ -16,43 +16,49 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 def search_by_area(request, *args, **kwargs):
     try:
         property_name = request.GET.get('property_name')
-        location_name = request.GET.get('location_name')
+        # location_name = request.GET.get('location_name')
         if property_name!=None:
             if property_name!=None and len(property_name) > 1:
                 property_name = property_name.replace('%20'," ")
+                location_name = property_name.replace('%20'," ")
                 # Convert input property_name to lowercase for case-insensitive search
                 property_name = property_name.lower()
+                location_name = location_name.lower()
                 # Perform a case-insensitive search for property name in the database
                 property_instance = Area.objects.filter(Q(neighbour__istartswith=property_name))
-                if property_instance:
+                location_instance = location.objects.filter(Q(location_name__istartswith=location_name))
+                if property_instance or location_instance:
                     # Serialize the property instance to retrieve its ID
-                    serializer = AreaSerializer(property_instance,many=True)
-                    return Response({'property_info': serializer.data},status=status.HTTP_200_OK)
+                    serializer_property = AreaSerializer(property_instance,many=True)
+                    serializer_location = LocationSerializer(location_instance,many=True)
+
+                    return Response({'property_info': serializer_property.data+serializer_location.data},status=status.HTTP_200_OK)
                 else:
                     return Response({'message': 'Property not found'},status=status.HTTP_200_OK)
             else:
                 return Response({'message': 'missing property name or string must be of length 2'},status=status.HTTP_400_BAD_REQUEST)
-        if location_name !=None:
-            if location_name!=None and len(location_name) > 1:
-                location_name = location_name.replace('%20'," ")
-            # Convert input property_name to lowercase for case-insensitive search
-            location_name = location_name.lower()
-            # Perform a case-insensitive search for property name in the database
-            property_instance = location.objects.filter(Q(location_name__istartswith=location_name))
-            if property_instance:
-                # Serialize the property instance to retrieve its ID
-                serializer = LocationSerializer(property_instance,many=True)
-                return Response({'property_info': serializer.data},status=status.HTTP_200_OK)
-            else:
-                return Response({'message': 'Property not found'},status=status.HTTP_200_OK)
-        else:
-            return Response({'message': 'missing location name or string must be of length 2'},status=status.HTTP_400_BAD_REQUEST)
+        # if location_name !=None:
+        #     if location_name!=None and len(location_name) > 1:
+        #         location_name = location_name.replace('%20'," ")
+        #     # Convert input property_name to lowercase for case-insensitive search
+        #     location_name = location_name.lower()
+        #     # Perform a case-insensitive search for property name in the database
+        #     property_instance = location.objects.filter(Q(location_name__istartswith=location_name))
+        #     if property_instance:
+        #         # Serialize the property instance to retrieve its ID
+        #         serializer = LocationSerializer(property_instance,many=True)
+        #         return Response({'property_info': serializer.data},status=status.HTTP_200_OK)
+        #     else:
+        #         return Response({'message': 'Property not found'},status=status.HTTP_200_OK)
+        # else:
+        #     return Response({'message': 'missing location name or string must be of length 2'},status=status.HTTP_400_BAD_REQUEST)
 
 
 
 
 
-    except:
+    except Exception as E:
+        print(E)
         return Response({'error':'error'},status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
@@ -143,7 +149,7 @@ def top_properties_by_margin(request, *args, **kwargs):
     try:
         property_instance = Properties.objects.annotate(numeric_margin=Cast('margin', FloatField())).order_by('-numeric_margin')[:20]
         if property_instance:
-            serialized_data = list(property_instance.values('id','title', 'price','bedrooms','living_area','location','image_urls')) if property_instance else []
+            serialized_data = list(property_instance.values('id','title', 'price','bedrooms','living_area','location_property','image_urls')) if property_instance else []
             return Response({'property_info': serialized_data},status=status.HTTP_200_OK)
 
         else:
