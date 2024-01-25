@@ -164,9 +164,9 @@ def top_properties_by_margin(request, *args, **kwargs):
             serialized_data = PropertiesSerializer(properties, many=True)
             filtered_data = [{'id': item['id'], 'title': item['title'], 'price': item['price'],
                       'bedrooms': item['bedrooms'], 'living_area': item['living_area'],
-                      'location_property': item['location_property'], 'image_urls': item['image_urls']}
+                      'location_property': item['location_property'], 'image_urls': item['image_urls'],'price_per_meter_sq_on_plotcore':item['price_per_meter_sq_on_plotcore'],'price_per_mSq':item['price_per_mSq']}
                      for item in serialized_data.data]
-            return Response({'property_info': filtered_data},status=status.HTTP_200_OK)
+            return Response({'property_info': filtered_data,'total_count':len(property_instance)},status=status.HTTP_200_OK)
 
         else:
             return Response({'message': 'Property not found'},status=status.HTTP_200_OK)
