@@ -147,16 +147,33 @@ def search_property_by_area(request, *args, **kwargs):
 @api_view(['GET'])
 def top_properties_by_margin(request, *args, **kwargs):
     try:
-        property_instance = Properties.objects.annotate(numeric_margin=Cast('margin', FloatField())).order_by('-numeric_margin')[:20]
-        if property_instance:
-            serialized_data = list(property_instance.values('id','title', 'price','bedrooms','living_area','location_property','image_urls')) if property_instance else []
-            return Response({'property_info': serialized_data},status=status.HTTP_200_OK)
+        property_instance = Properties.objects.annotate(numeric_margin=Cast('margin', FloatField())).order_by('-numeric_margin')
+        paginator = Paginator(property_instance, 20)  # Number of items per page
+        page = request.GET.get('page')
+        try:
+            properties = paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            properties = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range, deliver last page of results.
+            properties = paginator.page(paginator.num_pages)
+
+        if properties:
+            # serialized_data = list(properties.values('id','title', 'price','bedrooms','living_area','location_property','image_urls')) if properties else []
+            serialized_data = PropertiesSerializer(properties, many=True)
+            filtered_data = [{'id': item['id'], 'title': item['title'], 'price': item['price'],
+                      'bedrooms': item['bedrooms'], 'living_area': item['living_area'],
+                      'location_property': item['location_property'], 'image_urls': item['image_urls']}
+                     for item in serialized_data.data]
+            return Response({'property_info': filtered_data},status=status.HTTP_200_OK)
 
         else:
             return Response({'message': 'Property not found'},status=status.HTTP_200_OK)
         
 
-    except:
+    except Exception as E:
+        print(E)
         return Response({'error':'error'},status=status.HTTP_400_BAD_REQUEST)    
     
 @api_view(['GET'])
