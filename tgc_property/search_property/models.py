@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class Area(models.Model):
     area_id = models.AutoField(primary_key=True)
@@ -51,6 +52,7 @@ class Properties(models.Model):
     phone_number = models.TextField()
     is_good_property = models.TextField()
     margin = models.TextField()
+    date_time = models.DateTimeField(default=timezone.now)
 
     class Meta:
         managed = False
