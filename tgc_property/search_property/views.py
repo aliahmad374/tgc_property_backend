@@ -72,14 +72,14 @@ def search_property_by_area(request, *args, **kwargs):
         min_area = request.GET.get('min_area')
         max_area = request.GET.get('max_area')
         
-        if area_id!=None:
+        if area_id!=None:        
             filters = {'area_id':area_id}
-            if bedrooms!=None:
+            if bedrooms!=None and bedrooms!="":
                 filters['bedrooms']=bedrooms
-            if min_price!=None and max_price!=None:
+            if min_price!=None and max_price!=None and min_price!="" and max_price!="":
                 filters['price__gte'] = min_price
                 filters['price__lte'] = max_price
-            if min_area!=None and max_area!=None:
+            if min_area!=None and max_area!=None and min_area!="" and max_area!="":
                 filters['living_area__gte'] = min_area
                 filters['living_area__lte'] = max_area
 
@@ -106,12 +106,12 @@ def search_property_by_area(request, *args, **kwargs):
         elif location_id!=None:
 
             filters = {'location_id':location_id}
-            if bedrooms!=None:
+            if bedrooms!=None and bedrooms!="":
                 filters['bedrooms']=bedrooms
-            if min_price!=None and max_price!=None:
+            if min_price!=None and max_price!=None and min_price!="" and max_price!="":
                 filters['price__gte'] = min_price
                 filters['price__lte'] = max_price
-            if min_area!=None and max_area!=None:
+            if min_area!=None and max_area!=None and min_area!="" and max_area!="":
                 filters['living_area__gte'] = min_area
                 filters['living_area__lte'] = max_area
 
