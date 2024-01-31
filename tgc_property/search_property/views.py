@@ -147,7 +147,7 @@ def search_property_by_area(request, *args, **kwargs):
 @api_view(['GET'])
 def top_properties_by_margin(request, *args, **kwargs):
     try:
-        property_instance = Properties.objects.annotate(numeric_margin=Cast('margin', FloatField())).order_by('-numeric_margin')
+        property_instance = Properties.objects.annotate(numeric_margin=Cast('margin', FloatField())).filter(status_property=0).order_by('-numeric_margin')
         paginator = Paginator(property_instance, 20)  # Number of items per page
         page = request.GET.get('page')
         try:
@@ -164,7 +164,7 @@ def top_properties_by_margin(request, *args, **kwargs):
             serialized_data = PropertiesSerializer(properties, many=True)
             filtered_data = [{'id': item['id'], 'title': item['title'], 'price': item['price'],
                       'bedrooms': item['bedrooms'], 'living_area': item['living_area'],
-                      'location_property': item['location_property'], 'image_urls': item['image_urls'],'price_per_meter_sq_on_plotcore':item['price_per_meter_sq_on_plotcore'],'price_per_mSq':item['price_per_mSq']}
+                      'location_property': item['location_property'], 'image_urls': item['image_urls'],'price_per_meter_sq_on_plotcore':item['price_per_meter_sq_on_plotcore'],'price_per_mSq':item['price_per_mSq'],'status_property':item['status_property'],'date_time':item['date_time']}
                      for item in serialized_data.data]
             return Response({'property_info': filtered_data,'total_count':len(property_instance)},status=status.HTTP_200_OK)
 

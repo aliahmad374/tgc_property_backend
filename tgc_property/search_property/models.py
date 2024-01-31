@@ -53,7 +53,7 @@ class Properties(models.Model):
     is_good_property = models.TextField()
     margin = models.TextField()
     date_time = models.DateTimeField(default=timezone.now)
-
+    status_property = models.IntegerField()
     class Meta:
         managed = False
         db_table = 'properties'
