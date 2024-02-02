@@ -10,4 +10,6 @@ urlpatterns = [
     path('topareaproperty/', views.top_property_by_ares,name='topareaproperty'),
     # search by Location
     path('toplocationproperty/', views.top_property_by_location,name='top_property_by_location'),
+    path('lastest_property/', views.lastest_property_twenty_four_hour,name='lastest_property_twenty_four_hour'),
+
 ]

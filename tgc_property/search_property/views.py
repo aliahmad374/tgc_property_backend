@@ -11,6 +11,8 @@ from django.db.models import FloatField, F, Value
 from django.db.models.functions import Cast
 from django.db.models import Count
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils import timezone
+from datetime import timedelta
 
 @api_view(['GET'])
 def search_by_area(request, *args, **kwargs):
@@ -279,3 +281,29 @@ def top_property_by_location(request, *args, **kwargs):
     except Exception as E:
         print(E)
         return Response({'error':'error'},status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['GET'])
+def lastest_property_twenty_four_hour(request,*args, **kwargs):
+    current_datetime = timezone.now()
+    start_datetime = current_datetime - timedelta(hours=24)
+    filtered_properties = Properties.objects.filter(date_time__range=(start_datetime, current_datetime))
+    paginator = Paginator(filtered_properties, 20)
+    page = request.GET.get('page')
+    try:
+        properties = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        properties = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page of results.
+        properties = paginator.page(paginator.num_pages)
+    if properties:
+            serialized_data = PropertiesSerializer(properties, many=True)
+            filtered_data = [{'id': item['id'], 'title': item['title'], 'price': item['price'],
+                      'bedrooms': item['bedrooms'], 'living_area': item['living_area'],
+                      'location_property': item['location_property'], 'image_urls': item['image_urls'],'price_per_meter_sq_on_plotcore':item['price_per_meter_sq_on_plotcore'],'price_per_mSq':item['price_per_mSq'],'status_property':item['status_property'],'date_time':item['date_time']}
+                     for item in serialized_data.data]
+            return Response({'property_info': filtered_data,'total_count':len(filtered_properties)},status=status.HTTP_200_OK)    
+    else:        
+        return Response({'message': 'Property not found'},status=status.HTTP_200_OK)
