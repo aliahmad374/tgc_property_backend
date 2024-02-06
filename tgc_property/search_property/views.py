@@ -86,7 +86,7 @@ def search_property_by_area(request, *args, **kwargs):
                 filters['living_area__lte'] = max_area
 
             # Perform a case-insensitive search for property name in the database
-            property_instance = Properties.objects.filter(**filters).filter(status_property=0).order_by(-F('margin'))
+            property_instance = Properties.objects.filter(**filters).filter(status_property=0).exclude(price="op").order_by(-F('margin'))
             paginator = Paginator(property_instance, 10)  # Number of items per page
             page = request.GET.get('page')
             try:
@@ -118,7 +118,7 @@ def search_property_by_area(request, *args, **kwargs):
                 filters['living_area__lte'] = max_area
 
             # Perform a case-insensitive search for property name in the database
-            property_instance = Properties.objects.filter(**filters).filter(status_property=0).order_by(-F('margin'))
+            property_instance = Properties.objects.filter(**filters).filter(status_property=0).exclude(price="op").order_by(-F('margin'))
             paginator = Paginator(property_instance, 10)  # Number of items per page
             page = request.GET.get('page')
             try:
@@ -149,7 +149,7 @@ def search_property_by_area(request, *args, **kwargs):
 @api_view(['GET'])
 def top_properties_by_margin(request, *args, **kwargs):
     try:
-        property_instance = Properties.objects.annotate(numeric_margin=Cast('margin', FloatField())).filter(status_property=0).order_by('-numeric_margin')
+        property_instance = Properties.objects.annotate(numeric_margin=Cast('margin', FloatField())).filter(status_property=0).exclude(price="op").order_by('-numeric_margin')
         paginator = Paginator(property_instance, 20)  # Number of items per page
         page = request.GET.get('page')
         try:
@@ -205,7 +205,7 @@ def search_property_by_id(request, *args, **kwargs):
 def top_property_by_ares(request, *args, **kwargs):
     try:
         # Assuming your model name is Property and the field name is area_id
-        query_result = Properties.objects.values('area_id').annotate(repetitions=Count('area_id')).filter(status_property=0).order_by('-repetitions')[:16]
+        query_result = Properties.objects.values('area_id').annotate(repetitions=Count('area_id')).filter(status_property=0).exclude(price="op").order_by('-repetitions')[:16]
         # Extract area_id values from the result
         top_area_ids = [area['area_id'] for area in query_result]        
         top_properties = Area.objects.filter(area_id__in=top_area_ids).values('area_id', 'neighbour')
@@ -240,7 +240,7 @@ def search_property_by_location(request, *args, **kwargs):
                 filters['living_area__lte'] = max_area
 
             # Perform a case-insensitive search for property name in the database
-            property_instance = Properties.objects.filter(**filters).filter(status_property=0).order_by(-F('margin'))
+            property_instance = Properties.objects.filter(**filters).filter(status_property=0).exclude(price="op").order_by(-F('margin'))
             paginator = Paginator(property_instance, 10)  # Number of items per page
             page = request.GET.get('page')
             try:
@@ -272,7 +272,7 @@ def search_property_by_location(request, *args, **kwargs):
 def top_property_by_location(request, *args, **kwargs):
     try:
         # Assuming your model name is Property and the field name is area_id
-        query_result = Properties.objects.values('location_id').annotate(repetitions=Count('location_id')).filter(status_property=0).order_by('-repetitions')[:16]
+        query_result = Properties.objects.values('location_id').annotate(repetitions=Count('location_id')).filter(status_property=0).exclude(price="op").order_by('-repetitions')[:16]
         # Extract area_id values from the result
         top_area_ids = [area['location_id'] for area in query_result]        
         top_properties = location.objects.filter(location_id__in=top_area_ids).values('location_id', 'location_name')
@@ -287,7 +287,7 @@ def top_property_by_location(request, *args, **kwargs):
 def lastest_property_twenty_four_hour(request,*args, **kwargs):
     current_datetime = timezone.now()
     start_datetime = current_datetime - timedelta(hours=24)
-    filtered_properties = Properties.objects.filter(date_time__range=(start_datetime, current_datetime))
+    filtered_properties = Properties.objects.filter(date_time__range=(start_datetime, current_datetime)).exclude(price="op")
     paginator = Paginator(filtered_properties, 20)
     page = request.GET.get('page')
     try:
